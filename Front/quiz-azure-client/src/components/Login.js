@@ -1,8 +1,37 @@
 import React, { useEffect } from 'react'
 import Center from './Center'
+import useForm from '../hooks/useForm'
 import { Button, Card, CardContent, TextField, Typography, Box } from '@mui/material'
 
 export default function Login() {
+
+    const getFreshModel = () => ({
+        name: '',
+        email: ''
+    })
+
+    const login = e => {
+        e.preventDefault();
+        if (validate())
+            console.log(values);
+    }
+
+    const validate = () => {
+        let temp = {}
+        temp.email = (/\S+@\S+\.\S+/).test(values.email) ? "" : "Email is not valid."
+        temp.name = values.name !== "" ? "" : "This field is required."
+        setErrors(temp)
+        return Object.values(temp).every(x => x === "")
+    }
+
+    const {
+        values,
+        setValues,
+        errors,
+        setErrors,
+        handleInputChange
+    } = useForm(getFreshModel);
+
   return (
     <Center>
         <Card sx={{ width: 400 }}>
@@ -16,26 +45,30 @@ export default function Login() {
                         width: '90%'
                     }
                 }}>
-                    <form noValidate autoComplete="off">
-                        <TextField 
-                            label="Email"
-                            name="email"
-                            variant="outlined"
-                        />
-                        <TextField 
-                            label="Name"
-                            name="name"
-                            variant="outlined"
-                        />
-                        <Button
-                            type="submit"
-                            variant="contained"
-                            size="large"
-                            sx={{ width: '90%' }}
-                        >
-                            Start
-                        </Button>
-                    </form>
+                     <form noValidate autoComplete="off" onSubmit={login}>
+                            <TextField
+                                label="Email"
+                                name="email"
+                                value={values.email}
+                                onChange={handleInputChange}
+                                variant="outlined"
+                                {...(errors.email && { error: true, helperText: errors.email })} />
+                            <TextField
+                                label="Name"
+                                name="name"
+                                value={values.name}
+                                onChange={handleInputChange}
+                                variant="outlined"
+                                {...(errors.name && { error: true, helperText: errors.name })} />
+                            <Button
+                                type="submit"
+                                variant="contained"
+                                size="large"
+                                sx={{ width: '90%' }}
+                                >
+                                    Start
+                            </Button>
+                        </form>
                 </Box>
             </CardContent>
         </Card>
