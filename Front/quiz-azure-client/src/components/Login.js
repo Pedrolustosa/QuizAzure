@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import Center from './Center'
 import useForm from '../hooks/useForm'
 import { Button, Card, CardContent, TextField, Typography, Box } from '@mui/material'
+import { createAPIEndpoint, ENDPOINTS } from './../api/index';
 
 export default function Login() {
 
@@ -13,7 +14,9 @@ export default function Login() {
     const login = e => {
         e.preventDefault();
         if (validate())
-            console.log(values);
+            createAPIEndpoint(ENDPOINTS.participant).post(values)
+                                                    .then(res => console.log(res))
+                                                    .catch(err => console.log(err))
     }
 
     const validate = () => {
@@ -45,7 +48,7 @@ export default function Login() {
                         width: '90%'
                     }
                 }}>
-                     <form noValidate autoComplete="off" onSubmit={login}>
+                     <form noValidate autoComplete="on" onSubmit={login}>
                             <TextField
                                 label="Email"
                                 name="email"
