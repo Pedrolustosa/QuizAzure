@@ -3,20 +3,42 @@ import Center from './Center'
 import useForm from '../hooks/useForm'
 import { Button, Card, CardContent, TextField, Typography, Box } from '@mui/material'
 import { createAPIEndpoint, ENDPOINTS } from './../api/index';
+import useStateContext from '../hooks/useStateContext'
+import { useNavigate } from 'react-router-dom'
+
+const getFreshModel = () => ({
+    name: '',
+    email: ''
+})
 
 export default function Login() {
 
-    const getFreshModel = () => ({
-        name: '',
-        email: ''
-    })
+    const { context, setContext, resetContext } = useStateContext();
+    const navigate = useNavigate()
+
+    const {
+        values,
+        setValues,
+        errors,
+        setErrors,
+        handleInputChange
+    } = useForm(getFreshModel);
+
+    useEffect(() => {
+        resetContext()
+    }, [])
+
 
     const login = e => {
         e.preventDefault();
         if (validate())
-            createAPIEndpoint(ENDPOINTS.participant).post(values)
-                                                    .then(res => console.log(res))
-                                                    .catch(err => console.log(err))
+            createAPIEndpoint(ENDPOINTS.participant)
+                .post(values)
+                .then(res => {
+                    setContext({ participantId: res.data.participantId })
+                    navigate('/quiz')
+                })
+                .catch(err => console.log(err))
     }
 
     const validate = () => {
@@ -27,28 +49,20 @@ export default function Login() {
         return Object.values(temp).every(x => x === "")
     }
 
-    const {
-        values,
-        setValues,
-        errors,
-        setErrors,
-        handleInputChange
-    } = useForm(getFreshModel);
-
-  return (
-    <Center>
-        <Card sx={{ width: 400 }}>
-            <CardContent sx={{ textAlign: 'center' }}>
-                <Typography variant="h3" sx={{ my: 3 }}>
-                    Quiz App
-                </Typography>
-                <Box sx={{
-                    '& .MuiTextField-root': {
-                        m: 1,
-                        width: '90%'
-                    }
-                }}>
-                     <form noValidate autoComplete="on" onSubmit={login}>
+    return (
+        <Center>
+            <Card sx={{ width: 400 }}>
+                <CardContent sx={{ textAlign: 'center' }}>
+                    <Typography variant="h3" sx={{ my: 3 }}>
+                        Quiz App
+                    </Typography>
+                    <Box sx={{
+                        '& .MuiTextField-root': {
+                            m: 1,
+                            width: '90%'
+                        }
+                    }}>
+                        <form noValidate autoComplete="off" onSubmit={login}>
                             <TextField
                                 label="Email"
                                 name="email"
@@ -67,14 +81,13 @@ export default function Login() {
                                 type="submit"
                                 variant="contained"
                                 size="large"
-                                sx={{ width: '90%' }}
-                                >
-                                    Start
-                            </Button>
+                                sx={{ width: '90%' }}>Start</Button>
                         </form>
-                </Box>
-            </CardContent>
-        </Card>
-    </Center>
-  )
+                    </Box>
+                </CardContent>
+            </Card>
+        </Center>
+
+
+    )
 }
