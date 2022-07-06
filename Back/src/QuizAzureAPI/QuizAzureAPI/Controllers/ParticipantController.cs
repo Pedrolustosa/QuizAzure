@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿#nullable disable
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QuizAzureAPI.Models;
@@ -24,10 +20,6 @@ namespace QuizAzureAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Participant>>> GetParticipants()
         {
-          if (_context.Participants == null)
-          {
-              return NotFound();
-          }
             return await _context.Participants.ToListAsync();
         }
 
@@ -35,10 +27,6 @@ namespace QuizAzureAPI.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Participant>> GetParticipant(int id)
         {
-          if (_context.Participants == null)
-          {
-              return NotFound();
-          }
             var participant = await _context.Participants.FindAsync(id);
 
             if (participant == null)
@@ -52,12 +40,17 @@ namespace QuizAzureAPI.Controllers
         // PUT: api/Participant/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutParticipant(int id, Participant participant)
+        public async Task<IActionResult> PutParticipant(int id, ParticipantRestult _participantResult)
         {
-            if (id != participant.ParticipantId)
+            if (id != _participantResult.ParticipantId)
             {
                 return BadRequest();
             }
+
+            // get all current details of the record, then update with quiz results
+            Participant participant = _context.Participants.Find(id);
+            participant.Score = _participantResult.Score;
+            participant.TimeTaken = _participantResult.TimeTaken;
 
             _context.Entry(participant).State = EntityState.Modified;
 
@@ -105,10 +98,6 @@ namespace QuizAzureAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteParticipant(int id)
         {
-            if (_context.Participants == null)
-            {
-                return NotFound();
-            }
             var participant = await _context.Participants.FindAsync(id);
             if (participant == null)
             {
@@ -123,7 +112,7 @@ namespace QuizAzureAPI.Controllers
 
         private bool ParticipantExists(int id)
         {
-            return (_context.Participants?.Any(e => e.ParticipantId == id)).GetValueOrDefault();
+            return _context.Participants.Any(e => e.ParticipantId == id);
         }
     }
 }

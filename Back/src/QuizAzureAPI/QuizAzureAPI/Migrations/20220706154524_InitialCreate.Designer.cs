@@ -11,14 +11,14 @@ using QuizAzureAPI.Models;
 namespace QuizAzureAPI.Migrations
 {
     [DbContext(typeof(QuizAzureDBContext))]
-    [Migration("20220704215328_Initial Create")]
+    [Migration("20220706154524_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.2")
+                .HasAnnotation("ProductVersion", "6.0.6")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);

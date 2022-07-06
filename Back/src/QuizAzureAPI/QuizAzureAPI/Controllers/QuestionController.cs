@@ -1,6 +1,7 @@
-﻿using QuizAzureAPI.Models;
+﻿#nullable disable
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using QuizAzureAPI.Models;
 
 namespace QuizAzureAPI.Controllers
 {
@@ -19,21 +20,25 @@ namespace QuizAzureAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Question>>> GetQuestions()
         {
-          if (_context.Questions == null)
-          {
-              return NotFound();
-          }
-            return await _context.Questions.ToListAsync();
+            var random5Qns = await (_context.Questions
+                 .Select(x => new
+                 {
+                     QnId = x.QnId,
+                     QnInWords = x.QnInWords,
+                     ImageName = x.ImageName,
+                     Options = new string[] { x.Option1, x.Option2, x.Option3, x.Option4 }
+                 })
+                 .OrderBy(y => Guid.NewGuid())
+                 .Take(5)
+                 ).ToListAsync();
+
+            return Ok(random5Qns);
         }
 
         // GET: api/Question/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Question>> GetQuestion(int id)
         {
-          if (_context.Questions == null)
-          {
-              return NotFound();
-          }
             var question = await _context.Questions.FindAsync(id);
 
             if (question == null)
@@ -75,29 +80,29 @@ namespace QuizAzureAPI.Controllers
             return NoContent();
         }
 
-        // POST: api/Question
+        // POST: api/Question/GetAnswers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Question>> PostQuestion(Question question)
+        [Route("GetAnswers")]
+        public async Task<ActionResult<Question>> RetrieveAnswers(int[] qnIds)
         {
-          if (_context.Questions == null)
-          {
-              return Problem("Entity set 'QuizAzureDBContext.Questions'  is null.");
-          }
-            _context.Questions.Add(question);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetQuestion", new { id = question.QnId }, question);
+            var answers = await (_context.Questions
+                .Where(x => qnIds.Contains(x.QnId))
+                .Select(y => new
+                {
+                    QnId = y.QnId,
+                    QnInWords = y.QnInWords,
+                    ImageName = y.ImageName,
+                    Options = new string[] { y.Option1, y.Option2, y.Option3, y.Option4 },
+                    Answer = y.Answer
+                })).ToListAsync();
+            return Ok(answers);
         }
 
         // DELETE: api/Question/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteQuestion(int id)
         {
-            if (_context.Questions == null)
-            {
-                return NotFound();
-            }
             var question = await _context.Questions.FindAsync(id);
             if (question == null)
             {
@@ -112,7 +117,7 @@ namespace QuizAzureAPI.Controllers
 
         private bool QuestionExists(int id)
         {
-            return (_context.Questions?.Any(e => e.QnId == id)).GetValueOrDefault();
+            return _context.Questions.Any(e => e.QnId == id);
         }
     }
 }
